@@ -28,7 +28,7 @@ void main() {
 
   processOrder(orderId: 'A002', itemPrice: 3000.0);
 
-  processOrder(orderId: 'A003', itemPrice: 2000.0, promoCode: 'SAVE10', deliveryFee: 0.0);
+  processOrder(orderId: 'A003', itemPrice: 2000.0, promoCode: 'SAVE10', deliveryFee: 500);
 
   processOrder(orderId: 'A004', itemPrice: 1500.0, promoCode: 'WRONGCODE');
 }
