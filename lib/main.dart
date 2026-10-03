@@ -7,115 +7,161 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      title: 'Profile Card',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
+      home: const ProfileCardScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class ProfileCardScreen extends StatefulWidget {
+  const ProfileCardScreen({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<ProfileCardScreen> createState() => _ProfileCardScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _ProfileCardScreenState extends State<ProfileCardScreen> {
+  // ----- default values, used by the Reset button -----
+  static const bool _defaultIsFollowing = false;
+  static const bool _defaultIsLiked = false;
+  static const int _defaultLikeCount = 0;
+  static const int _defaultFollowersCount = 0;
 
-  void _incrementCounter() {
+  // ----- state: plain booleans, each press just flips true <-> false -----
+  bool isFollowing = _defaultIsFollowing;
+  bool isLiked = _defaultIsLiked;
+  int likeCount = _defaultLikeCount;
+  int followersCount = _defaultFollowersCount;
+
+  void _toggleLike() {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      isLiked = !isLiked; // boolean flip — can't "like" twice in a row
+      likeCount += isLiked ? 1 : -1; // +1 when liking, -1 when un-liking
+    });
+  }
+
+  void _toggleFollow() {
+    setState(() {
+      isFollowing =
+          !isFollowing; // boolean flip — can't "follow" twice in a row
+      followersCount += isFollowing ? 1 : -1;
+    });
+  }
+
+  void _reset() {
+    setState(() {
+      isFollowing = _defaultIsFollowing;
+      isLiked = _defaultIsLiked;
+      likeCount = _defaultLikeCount;
+      followersCount = _defaultFollowersCount;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: const Text('Profile Card'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            // ----- avatar -----
+            ClipOval(
+              child: Image.asset(
+                'assets/avatar.png',
+                width: 140,
+                height: 140,
+                fit: BoxFit.cover,
+                // shown until you add your own assets/avatar.png
+                errorBuilder: (context, error, stackTrace) => Container(
+                  width: 140,
+                  height: 140,
+                  color: Colors.grey[300],
+                  child: Icon(Icons.person, size: 70, color: Colors.grey[600]),
+                ),
+              ),
             ),
+            const SizedBox(height: 32),
+
+            // ----- like (left) and follow (right), below the avatar -----
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // LEFT: heart / like
+                Column(
+                  children: [
+                    IconButton(
+                      iconSize: 40,
+                      onPressed: _toggleLike,
+                      icon: Icon(
+                        isLiked ? Icons.favorite : Icons.favorite_border,
+                        color: isLiked ? Colors.red : Colors.grey[500],
+                      ),
+                    ),
+                    Text(
+                      '$likeCount likes',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(width: 60),
+
+                // RIGHT: blue follow rectangle
+                Column(
+                  children: [
+                    SizedBox(
+                      height: 40,
+                      child: ElevatedButton(
+                        onPressed: _toggleFollow,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isFollowing
+                              ? Colors.blue[100]
+                              : Colors.blue,
+                          foregroundColor: isFollowing
+                              ? Colors.blue[800]
+                              : Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          elevation: 0,
+                        ),
+                        child: Text(isFollowing ? 'Following' : 'Follow'),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$followersCount followers',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 32),
+            TextButton(onPressed: _reset, child: const Text('Reset')),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }

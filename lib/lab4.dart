@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Profile Card',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.indigo, useMaterial3: true),
+      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
       home: const ProfileCardScreen(),
     );
   }
@@ -26,27 +26,30 @@ class ProfileCardScreen extends StatefulWidget {
 }
 
 class _ProfileCardScreenState extends State<ProfileCardScreen> {
+  // ----- default values, used by the Reset button -----
   static const bool _defaultIsFollowing = false;
   static const bool _defaultIsLiked = false;
-  static const int _defaultLikeCount = 120;
-  static const int _defaultFollowersCount = 2450;
+  static const int _defaultLikeCount = 0;
+  static const int _defaultFollowersCount = 0;
 
+  // ----- state: plain booleans, each press just flips true <-> false -----
   bool isFollowing = _defaultIsFollowing;
   bool isLiked = _defaultIsLiked;
   int likeCount = _defaultLikeCount;
   int followersCount = _defaultFollowersCount;
 
-  void _toggleFollow() {
+  void _toggleLike() {
     setState(() {
-      isFollowing = !isFollowing;
-      followersCount += isFollowing ? 1 : -1;
+      isLiked = !isLiked; // boolean flip — can't "like" twice in a row
+      likeCount += isLiked ? 1 : -1; // +1 when liking, -1 when un-liking
     });
   }
 
-  void _toggleLike() {
+  void _toggleFollow() {
     setState(() {
-      isLiked = !isLiked;
-      likeCount += isLiked ? 1 : -1;
+      isFollowing =
+          !isFollowing; // boolean flip — can't "follow" twice in a row
+      followersCount += isFollowing ? 1 : -1;
     });
   }
 
@@ -62,110 +65,104 @@ class _ProfileCardScreenState extends State<ProfileCardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile Card')),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('Profile Card'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+      ),
       body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Card(
-            elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const CircleAvatar(
-                    radius: 50,
-                    backgroundColor: Colors.indigo,
-                    child: Icon(Icons.person, size: 55, color: Colors.white),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Medeu Yakubov',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-                  const Text(
-                    '@medeu.dev',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Flutter learner · Narxoz University',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14),
-                  ),
-                  const SizedBox(height: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ----- avatar -----
+            ClipOval(
+              child: Image.asset(
+                'assets/avatar.png',
+                width: 140,
+                height: 140,
+                fit: BoxFit.cover,
+                // shown until you add your own assets/avatar.png
+                errorBuilder: (context, error, stackTrace) => Container(
+                  width: 140,
+                  height: 140,
+                  color: Colors.grey[300],
+                  child: Icon(Icons.person, size: 70, color: Colors.grey[600]),
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _StatColumn(label: 'Followers', value: followersCount),
-                      _StatColumn(label: 'Likes', value: likeCount),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _toggleFollow,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isFollowing ? Colors.grey[300] : Colors.indigo,
-                        foregroundColor: isFollowing ? Colors.black87 : Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: Text(isFollowing ? 'Following' : 'Follow'),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
+            // ----- like (left) and follow (right), below the avatar -----
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // LEFT: heart / like
+                Column(
+                  children: [
+                    IconButton(
+                      iconSize: 40,
                       onPressed: _toggleLike,
                       icon: Icon(
                         isLiked ? Icons.favorite : Icons.favorite_border,
-                        color: isLiked ? Colors.red : Colors.black54,
+                        color: isLiked ? Colors.red : Colors.grey[500],
                       ),
-                      label: Text(isLiked ? 'Liked ($likeCount)' : 'Like ($likeCount)'),
-                      style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
                     ),
-                  ),
-                  const SizedBox(height: 12),
+                    Text(
+                      '$likeCount likes',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: TextButton(
-                      onPressed: _reset,
-                      child: const Text('Reset'),
+                const SizedBox(width: 60),
+
+                // RIGHT: blue follow rectangle
+                Column(
+                  children: [
+                    SizedBox(
+                      height: 40,
+                      child: ElevatedButton(
+                        onPressed: _toggleFollow,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isFollowing
+                              ? Colors.blue[100]
+                              : Colors.blue,
+                          foregroundColor: isFollowing
+                              ? Colors.blue[800]
+                              : Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          elevation: 0,
+                        ),
+                        child: Text(isFollowing ? 'Following' : 'Follow'),
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$followersCount followers',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ),
+
+            const SizedBox(height: 32),
+            TextButton(onPressed: _reset, child: const Text('Reset')),
+          ],
         ),
       ),
-    );
-  }
-}
-
-class _StatColumn extends StatelessWidget {
-  final String label;
-  final int value;
-
-  const _StatColumn({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          '$value',
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-      ],
     );
   }
 }
