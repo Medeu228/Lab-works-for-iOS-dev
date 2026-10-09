@@ -26,29 +26,37 @@ class ProfileCardScreen extends StatefulWidget {
 }
 
 class _ProfileCardScreenState extends State<ProfileCardScreen> {
-  // ----- default values, used by the Reset button -----
   static const bool _defaultIsFollowing = false;
   static const bool _defaultIsLiked = false;
-  static const int _defaultLikeCount = 0;
-  static const int _defaultFollowersCount = 0;
+  static const bool _defaultIsDisliked = false;
+  static const int _defaultLikeCount = 66;
+  static const int _defaultDislikeCount = 0;
+  static const int _defaultFollowersCount = 1487;
 
-  // ----- state: plain booleans, each press just flips true <-> false -----
   bool isFollowing = _defaultIsFollowing;
   bool isLiked = _defaultIsLiked;
+  bool isDisliked = _defaultIsDisliked;
   int likeCount = _defaultLikeCount;
+  int dislikeCount = _defaultDislikeCount;
   int followersCount = _defaultFollowersCount;
 
   void _toggleLike() {
     setState(() {
-      isLiked = !isLiked; // boolean flip — can't "like" twice in a row
-      likeCount += isLiked ? 1 : -1; // +1 when liking, -1 when un-liking
+      isLiked = !isLiked;
+      likeCount += 1;
+    });
+  }
+
+  void _toggleDislike() {
+    setState(() {
+      isDisliked = !isDisliked;
+      likeCount -= 1;
     });
   }
 
   void _toggleFollow() {
     setState(() {
-      isFollowing =
-          !isFollowing; // boolean flip — can't "follow" twice in a row
+      isFollowing = !isFollowing;
       followersCount += isFollowing ? 1 : -1;
     });
   }
@@ -57,7 +65,9 @@ class _ProfileCardScreenState extends State<ProfileCardScreen> {
     setState(() {
       isFollowing = _defaultIsFollowing;
       isLiked = _defaultIsLiked;
+      isDisliked = _defaultIsDisliked;
       likeCount = _defaultLikeCount;
+      dislikeCount = _defaultDislikeCount;
       followersCount = _defaultFollowersCount;
     });
   }
@@ -76,53 +86,93 @@ class _ProfileCardScreenState extends State<ProfileCardScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // ----- avatar -----
-            ClipOval(
-              child: Image.asset(
-                'assets/avatar.png',
-                width: 140,
-                height: 140,
-                fit: BoxFit.cover,
-                // shown until you add your own assets/avatar.png
-                errorBuilder: (context, error, stackTrace) => Container(
+            Container(
+              width: 146,
+              height: 146,
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.grey[400]!, width: 3),
+              ),
+              child: ClipOval(
+                child: Image.asset(
+                  'assets/avatar.png',
                   width: 140,
                   height: 140,
-                  color: Colors.grey[300],
-                  child: Icon(Icons.person, size: 70, color: Colors.grey[600]),
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: 140,
+                    height: 140,
+                    color: Colors.grey[300],
+                    child: Icon(
+                      Icons.person,
+                      size: 70,
+                      color: Colors.grey[600],
+                    ),
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 32),
-
-            // ----- like (left) and follow (right), below the avatar -----
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // LEFT: heart / like
                 Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    IconButton(
-                      iconSize: 40,
-                      onPressed: _toggleLike,
-                      icon: Icon(
-                        isLiked ? Icons.favorite : Icons.favorite_border,
-                        color: isLiked ? Colors.red : Colors.grey[500],
-                      ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Like
+                        SizedBox(
+                          height: 40,
+                          width: 40,
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            iconSize: 32,
+                            onPressed: _toggleLike,
+                            icon: Icon(
+                              isLiked ? Icons.favorite : Icons.favorite_border,
+                              color: isLiked ? Colors.red : Colors.grey[500],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 20),
+                        // Dislike
+                        SizedBox(
+                          height: 40,
+                          width: 40,
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            iconSize: 32,
+                            onPressed: _toggleDislike,
+                            icon: Icon(
+                              isDisliked
+                                  ? Icons.thumb_down
+                                  : Icons.thumb_down_outlined,
+                              color: isDisliked
+                                  ? Colors.blue
+                                  : Colors.grey[500],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 4),
                     Text(
                       '$likeCount likes',
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 15,
                         color: Colors.black87,
                       ),
                     ),
                   ],
                 ),
 
-                const SizedBox(width: 60),
+                const SizedBox(width: 20),
 
-                // RIGHT: blue follow rectangle
+                // Follow
                 Column(
                   children: [
                     SizedBox(
